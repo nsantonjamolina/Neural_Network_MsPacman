@@ -1,2 +1,2 @@
-# Neural_Network_Mspacman
+# Neural_Network_MsPacman
 Neural network for MsPacman
