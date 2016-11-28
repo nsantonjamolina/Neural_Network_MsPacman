@@ -6,29 +6,29 @@ package NeuralNetwork;
 public class NeuralNetwork {
 
     private float[] _inputLayer;
-    private Neuron[] _hideLayer;
+    private Neuron[] hiddenLayer;
     private Neuron[] _outputLayer;
 
-    public NeuralNetwork(int neuronsInput, int neuronsHide, int neuronsOutput) {
+    public NeuralNetwork(int inputNeurons, int hiddenNeurons, int outputNeurons) {
 
-        _inputLayer = new float[neuronsInput];
-        _hideLayer = new Neuron[neuronsHide];
-        _outputLayer = new Neuron[neuronsOutput];
+        _inputLayer = new float[inputNeurons];
+        hiddenLayer = new Neuron[hiddenNeurons];
+        _outputLayer = new Neuron[outputNeurons];
 
-        for(Neuron neuron : _hideLayer) {
-            neuron = new Neuron(neuronsInput);
+        for(Neuron neuron : hiddenLayer) {
+            neuron = new Neuron(inputNeurons);
         }
         for(Neuron neuron : _outputLayer) {
-            neuron = new Neuron(neuronsHide);
+            neuron = new Neuron(hiddenNeurons);
         }
     }
 
     public void feedForward () {
 
-        float[] exitsHide = new float[_hideLayer.length];
+        float[] exitsHide = new float[hiddenLayer.length];
 
-        for(int i = 0; i < _hideLayer.length; i++) {
-            exitsHide[i] = _hideLayer[i].feedForward(_inputLayer);
+        for(int i = 0; i < hiddenLayer.length; i++) {
+            exitsHide[i] = hiddenLayer[i].feedForward(_inputLayer);
         }
 
         for(Neuron neuron : _outputLayer) {

@@ -17,6 +17,8 @@ public class Neuron {
 
         _weights = new float[inputs + 1];
 
+        //Creo que en vez de iniciar a valores aleatorios, se deberían
+        // iniciar a 0 (que es lo más cerca de tanto -1 como de 1
         for (float weight : _weights) {
             weight = randomFloat((-1), 1);
         }
