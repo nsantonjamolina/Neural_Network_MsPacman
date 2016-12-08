@@ -17,8 +17,8 @@ public class Neuron {
 
         _weights = new float[inputs + 1];
 
-        for (float weight : _weights) {
-            weight = randomFloat((-1), 1);
+        for(int i = 0; i < _weights.length; i++) {
+            _weights[i] = randomFloat(-1,1);
         }
     }
 
@@ -66,6 +66,7 @@ public class Neuron {
 
     public static float randomFloat(float min, float max) {
         Random random = new Random();
-        return (random.nextFloat() * (min - max) + min);
+        float randomFl = (random.nextFloat() * (min - max) - min);
+        return randomFl;
     }
 }
