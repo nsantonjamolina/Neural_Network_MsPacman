@@ -2,6 +2,10 @@ package NeuralNetwork;
 
 import pacman.game.util.IO;
 
+import javax.swing.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 /**
  * Created by ramonserranolopez on 24/11/16.
  */
@@ -11,29 +15,33 @@ public class NeuralNetwork {
     private static float[][] dataset;
 
     private Neuron[] _hiddenLayer;
-    private Neuron[] _outputLayer;
+    private Neuron _outputLayer;
+
+    private float weightIncrementsIH;
+    private float weightIncrementsHO;
+
+    private float _learningRate = 0.01f;
 
     public NeuralNetwork(int inputNeurons, int hiddenNeurons, int outputNeurons) {
 
-        _hiddenLayer = new Neuron[hiddenNeurons];
-        _outputLayer = new Neuron[outputNeurons];
+        weightIncrementsIH = 0f;
+        weightIncrementsHO = 0f;
 
-        /*for(Neuron neuron : _hiddenLayer) {
-            neuron = new Neuron(inputNeurons);
-        }*/
+        _hiddenLayer = new Neuron[hiddenNeurons];
+
         for(int i = 0; i < hiddenNeurons; i++) {
-            _hiddenLayer[i] = new Neuron(inputNeurons);
+            _hiddenLayer[i] = new Neuron(inputNeurons, LayerType.HIDDEN);
         }
-        for(int i = 0; i < outputNeurons; i++) {
-            _outputLayer[i] = new Neuron(hiddenNeurons);
-        }
+
+        _outputLayer = new Neuron(hiddenNeurons, LayerType.OUTPUT);
+
         if(dataset == null) {
             dataset = LoadPacmanData();
         }
     }
     
 
-    public void forwardPropagation (float [] _inputLayer) {
+    public float forwardPropagation (float [] _inputLayer) {
 
         float[] hiddenLayerExits = new float[_hiddenLayer.length];
 
@@ -41,13 +49,80 @@ public class NeuralNetwork {
             hiddenLayerExits[i] = _hiddenLayer[i].feedForward(_inputLayer);
         }
 
-        float[] outputLayerExits = new float[_outputLayer.length];
+        return _outputLayer.feedForward(hiddenLayerExits);
+    }
 
-        for(int i = 0; i < _outputLayer.length; i++) {
-            outputLayerExits[i] = _outputLayer[i].feedForward(hiddenLayerExits);
+    public void backPropagation() {
+
+    }
+
+    public void UpdateWeights(int inputLength) {
+        for (int i = 0; i < _hiddenLayer.length; i++) {
+            float value = _outputLayer.getWeights()[i] + weightIncrementsHO;
+            _outputLayer.setWeight(i,value);
         }
 
-        System.out.printf("End forward propagation");
+        for (int i = 0; i < _hiddenLayer.length; i++) {
+            for(int j = 0; j < inputLength; j++) {
+                float value = _hiddenLayer[i].getWeights()[j] + weightIncrementsIH;
+                _hiddenLayer[i].setWeight(j,value);
+            }
+        }
+    }
+
+    public void Train(float[][] dataset, float learningRate) {
+        /*forwardPropagation();
+        backpPropagation();
+        UpdateWeights();*/
+
+        boolean classifedCorrectly = true;
+
+        do {
+            for(float[] tuple : dataset) {
+
+                float[] inputs = {tuple[0], tuple[1]};
+                float expetedOutput = tuple[3];
+
+                //calcular la salida de la red neuronal (feedfordward)
+                float output = forwardPropagation(inputs);
+
+                if(!isCorrectlyClassified(output, expetedOutput)) {
+                    classifedCorrectly = false;
+
+                    //calcular los errores de la capa de salida
+                    _outputLayer.calculateError(expetedOutput);
+
+                    float hiddenErrorSumatory = 0;
+
+                    //calcular Δwho para los pesos de todas conexiones entre
+                    //la capa oculta y la capa de salida (who)
+                    for (int i = 0; i < _hiddenLayer.length; i++) {
+                        weightIncrementsHO += _learningRate * _outputLayer.getError() * _hiddenLayer[i].getExit();
+                        hiddenErrorSumatory += _outputLayer.getError() * _outputLayer.getWeights()[i];
+                    }
+
+                    //calcular los errores de la capa oculta
+                    for(Neuron neuron : _hiddenLayer) {
+                        neuron.calculateError(hiddenErrorSumatory);
+                    }
+
+                    //calcular Δwih para los pesos de todas conexiones entre
+                    //la capa de entrada y la capa oculta(wih).
+                    for (int i = 0; i < _hiddenLayer.length; i++) {
+                        for(int j = 0; j < inputs.length; j++) {
+                            weightIncrementsIH += _learningRate * _hiddenLayer[i].getError() * inputs[j];
+                        }
+                    }
+                }
+
+                //actualizar los pesos de la red who y wih
+                UpdateWeights(inputs.length);
+            }
+        } while (!classifedCorrectly);
+    }
+
+    public boolean isCorrectlyClassified(float output, float expetedOutput) {
+        return round(output, 2) == round(expetedOutput, 2);
     }
 
     public float[][] LoadPacmanData () {
@@ -69,19 +144,15 @@ public class NeuralNetwork {
         return dataset;
     }
 
-    public void Backpropagation() {
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
 
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 
-    public void UpdateWeights() {
 
-    }
-
-    public void Training() {
-        /*forwardPropagation();
-        Backpropagation();
-        UpdateWeights();*/
-    }
 
 
     public static void main (String [ ] args) {
@@ -95,5 +166,6 @@ public class NeuralNetwork {
             neuralNetwork.forwardPropagation(inputs);
         }
         System.out.printf("End Forward");
+
     }
 }
