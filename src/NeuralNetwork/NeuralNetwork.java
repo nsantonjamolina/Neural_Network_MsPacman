@@ -39,54 +39,27 @@ public class NeuralNetwork {
             dataset = LoadPacmanData();
         }
     }
-    
 
-    public float forwardPropagation (float [] _inputLayer) {
-
-        float[] hiddenLayerExits = new float[_hiddenLayer.length];
-
-        for(int i = 0; i < _hiddenLayer.length; i++) {
-            hiddenLayerExits[i] = _hiddenLayer[i].feedForward(_inputLayer);
-        }
-
-        return _outputLayer.feedForward(hiddenLayerExits);
+    public void Train() {
+        BackPropagation(dataset, _learningRate);
     }
 
-    public void backPropagation() {
-
-    }
-
-    public void UpdateWeights(int inputLength) {
-        for (int i = 0; i < _hiddenLayer.length; i++) {
-            float value = _outputLayer.getWeights()[i] + weightIncrementsHO;
-            _outputLayer.setWeight(i,value);
-        }
-
-        for (int i = 0; i < _hiddenLayer.length; i++) {
-            for(int j = 0; j < inputLength; j++) {
-                float value = _hiddenLayer[i].getWeights()[j] + weightIncrementsIH;
-                _hiddenLayer[i].setWeight(j,value);
-            }
-        }
-    }
-
-    public void Train(float[][] dataset, float learningRate) {
-        /*forwardPropagation();
-        backpPropagation();
-        UpdateWeights();*/
+    public void BackPropagation(float[][] dataset, float learningRate) {
 
         boolean classifedCorrectly = true;
 
         do {
             for(float[] tuple : dataset) {
 
+                //TODO: cambiar para que coja las entradas de forma dimanica y la salida
+                //HACK: aqui seteo a pelo
                 float[] inputs = {tuple[0], tuple[1]};
-                float expetedOutput = tuple[3];
+                float expetedOutput = tuple[2];
 
                 //calcular la salida de la red neuronal (feedfordward)
                 float output = forwardPropagation(inputs);
 
-                if(!isCorrectlyClassified(output, expetedOutput)) {
+                if(!isCorrectlyClassified(output, expetedOutput, 1)) {
                     classifedCorrectly = false;
 
                     //calcular los errores de la capa de salida
@@ -114,15 +87,41 @@ public class NeuralNetwork {
                         }
                     }
                 }
-
-                //actualizar los pesos de la red who y wih
-                UpdateWeights(inputs.length);
             }
+            //TODO: Hacerlo dinamico
+            //actualizar los pesos de la red who y wih
+            UpdateWeights(2);
         } while (!classifedCorrectly);
+        System.out.println("END TRAINING");
     }
 
-    public boolean isCorrectlyClassified(float output, float expetedOutput) {
-        return round(output, 2) == round(expetedOutput, 2);
+    public float forwardPropagation (float [] _inputLayer) {
+
+        float[] hiddenLayerExits = new float[_hiddenLayer.length];
+
+        for(int i = 0; i < _hiddenLayer.length; i++) {
+            hiddenLayerExits[i] = _hiddenLayer[i].feedForward(_inputLayer);
+        }
+
+        return _outputLayer.feedForward(hiddenLayerExits);
+    }
+
+    public void UpdateWeights(int inputLength) {
+        for (int i = 0; i < _hiddenLayer.length; i++) {
+            float value = _outputLayer.getWeights()[i] + weightIncrementsHO;
+            _outputLayer.setWeight(i,value);
+        }
+
+        for (int i = 0; i < _hiddenLayer.length; i++) {
+            for(int j = 0; j < inputLength; j++) {
+                float value = _hiddenLayer[i].getWeights()[j] + weightIncrementsIH;
+                _hiddenLayer[i].setWeight(j,value);
+            }
+        }
+    }
+
+    public boolean isCorrectlyClassified(float output, float expetedOutput, int n) {
+        return round(output, n) == round(expetedOutput, n);
     }
 
     public float[][] LoadPacmanData () {
@@ -153,19 +152,13 @@ public class NeuralNetwork {
     }
 
 
-
-
     public static void main (String [ ] args) {
         int input = 2;
         int hide = 2 * input + 1;
         int output = 1;
-        NeuralNetwork neuralNetwork = new NeuralNetwork(input, hide, output);
 
-        for (int i = 0; i < dataset.length; i++) {
-            float[] inputs = {dataset[i][0], dataset[i][1]};
-            neuralNetwork.forwardPropagation(inputs);
-        }
-        System.out.printf("End Forward");
+        NeuralNetwork neuralNetwork = new NeuralNetwork(input, hide, output);
+        neuralNetwork.Train();
 
     }
 }
