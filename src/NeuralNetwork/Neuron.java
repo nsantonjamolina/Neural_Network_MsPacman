@@ -28,7 +28,8 @@ public class Neuron {
         _currentLayer = type;
 
         for(int i = 0; i < _weights.length; i++) {
-            _weights[i] = randomFloat(-1,1);
+            float randValue = randomFloat(-1,1);
+            _weights[i] = randValue;
         }
     }
 
@@ -37,7 +38,8 @@ public class Neuron {
         float[] products = new float[_inputs.length + 1];
 
         for(int i = 0; i < _inputs.length; i++) {
-            products[i]  = _inputs[i] * _weights[i];
+            float productValue = _inputs[i] * _weights[i];
+            products[i]  = productValue;
         }
 
         products[_inputs.length] = bias * _weights[_inputs.length];
@@ -58,26 +60,13 @@ public class Neuron {
     }
 
     public float sigmoidalActivation(float x) {
-        return  (float) (1/(1 + Math.pow(Math.E, -x)));
-    }
-
-    public float derivedSigmoidalActivation(float x) {
-        return  sigmoidalActivation(x) * (1 - sigmoidalActivation(x));
+        float gValue = (float) (1/(1 + Math.pow(Math.E, -x)));
+        return  gValue;
     }
 
     public float feedForward(float[] inputs) {
         _exit = sigmoidalActivation(sumatory(inputs));
         return _exit;
-    }
-
-    public void setWeights(float[] newWeights) {
-        if((_weights.length - 1) == newWeights.length) {
-            for(int i = 0; i < newWeights.length; i++){
-                _weights[i] = newWeights[i];
-            }
-        } else  {
-            System.out.println("Array length error");
-        }
     }
 
     public void setWeight(int pos, float value) {
@@ -96,11 +85,12 @@ public class Neuron {
 
     public void calculateError(float x) {
         if(_currentLayer == LayerType.OUTPUT) {
-            _error = derivedSigmoidalActivation(_exit) * (1 - _exit) * (x - _exit);
+            //_error = derivedSigmoidalActivation(_exit) * (1 - _exit) * (x - _exit);
+            _error = _exit * (1 - _exit) * (x - _exit);
         } else {
-            _error = derivedSigmoidalActivation(_exit) * x;
+            //_error = derivedSigmoidalActivation(_exit) * x;
+            _error = _exit * (1 - _exit) * x;
         }
-
     }
 
     public static float randomFloat(float min, float max) {
