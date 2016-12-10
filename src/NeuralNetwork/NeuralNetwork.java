@@ -11,7 +11,7 @@ import java.math.RoundingMode;
  */
 public class NeuralNetwork {
 
-    private static String fileName = "dataset.txt";
+    private static String fileName = "logicOR.txt";
     private static float[][] dataset;
 
     private Neuron[] _hiddenLayer;
@@ -55,6 +55,11 @@ public class NeuralNetwork {
                 //HACK: aqui seteo a pelo
                 float[] inputs = {tuple[0], tuple[1]};
                 float expetedOutput = tuple[2];
+
+                //Repetir hasta que no se cumpla la condicion de parada!
+                //Inicializar Δwih y Δwho a 0
+                weightIncrementsIH = 0f;
+                weightIncrementsHO = 0f;
 
                 //calcular la salida de la red neuronal (feedfordward)
                 float output = forwardPropagation(inputs);
