@@ -10,7 +10,7 @@ import java.math.RoundingMode;
  */
 public class NeuralNetwork {
 
-    private static String fileName = "dataset.txt";
+    private static String fileName = "logicOR.txt";
     private static float[][] dataset;
 
     private Neuron[] _hiddenLayer;
@@ -21,10 +21,13 @@ public class NeuralNetwork {
 
     private float _learningRate = 0.01f;
 
+    private int _epochs;
+
     public NeuralNetwork(int inputNeurons, int hiddenNeurons, int outputNeurons) {
 
         _weightIncrementsIH = 0f;
         _weightIncrementsHO = 0f;
+        _epochs = 0;
 
         _hiddenLayer = new Neuron[hiddenNeurons];
 
@@ -74,20 +77,25 @@ public class NeuralNetwork {
                     //calcular los errores de la capa de salida
                     _outputLayer.calculateError(expetedOutput);
 
-                    float hiddenErrorSumatory = 0;
+
 
                     //calcular Δwho para los pesos de todas conexiones entre
                     //la capa oculta y la capa de salida (who)
                     for (int i = 0; i < _hiddenLayer.length; i++) {
                         float outputError = _outputLayer.getError();
                         float hiddenNeuronExit = _hiddenLayer[i].getExit();
-                        float weightHO = _outputLayer.getWeights()[i];
-
                         _weightIncrementsHO += _learningRate * outputError * hiddenNeuronExit;
-                        hiddenErrorSumatory += outputError * weightHO;
                     }
 
                     //calcular los errores de la capa oculta
+                    float hiddenErrorSumatory = 0;
+
+                    for (int i = 0; i < _hiddenLayer.length; i++) {
+                        float outputError = _outputLayer.getError();
+                        float weightHO = _outputLayer.getWeights()[i];
+                        hiddenErrorSumatory += outputError * weightHO;
+                    }
+
                     for(Neuron neuron : _hiddenLayer) {
                         neuron.calculateError(hiddenErrorSumatory);
                     }
@@ -104,7 +112,7 @@ public class NeuralNetwork {
 
             //actualizar los pesos de la red who y wih
             UpdateWeights(2);
-
+            _epochs++;
         } while (isClassified(errors, 30));
         System.out.println("END TRAINING");
     }
@@ -113,7 +121,7 @@ public class NeuralNetwork {
         float errorAmountNormalized = (float) errors / dataset.length;
         float percentage = errorAmountNormalized * 100f;
 
-        System.out.print("\r" + percentage + "%");
+        System.out.print("\r" + "Epoch amount: " + _epochs + " - Percentage Error: " + percentage + "%");
         return (percentage <= validPercentage) ? false : true;
     }
 
@@ -129,13 +137,14 @@ public class NeuralNetwork {
     }
 
     public void UpdateWeights(int inputLength) {
-        for (int i = 0; i < _hiddenLayer.length; i++) {
+        // Hacemos update del peso del bias de cada neurona de la capa oculta y de la neurona de salida
+        for (int i = 0; i < _outputLayer.getWeights().length; i++) {
             float value = _outputLayer.getWeights()[i] + _weightIncrementsHO;
             _outputLayer.setWeight(i,value);
         }
 
         for (int i = 0; i < _hiddenLayer.length; i++) {
-            for(int j = 0; j < inputLength; j++) {
+            for(int j = 0; j < _hiddenLayer[i].getWeights().length; j++) {
                 float value = _hiddenLayer[i].getWeights()[j] + _weightIncrementsIH;
                 _hiddenLayer[i].setWeight(j,value);
             }
@@ -144,6 +153,7 @@ public class NeuralNetwork {
 
     public boolean isCorrectlyClassified(float output, float expetedOutput, int n) {
         return round(output, n) == round(expetedOutput, n);
+        //return output == expetedOutput;
     }
 
     public float[][] LoadPacmanData () {
