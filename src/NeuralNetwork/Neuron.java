@@ -75,6 +75,10 @@ public class Neuron {
         }
     }
 
+    public static int getBias() {
+        return bias;
+    }
+
     public float[] getWeights() { return  _weights; }
 
     public float getExit() {
