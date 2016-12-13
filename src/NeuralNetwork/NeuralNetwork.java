@@ -2,16 +2,14 @@ package NeuralNetwork;
 
 import pacman.game.util.IO;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 /**
  * Created by ramonserranolopez on 24/11/16.
  */
 public class NeuralNetwork {
 
     private static String fileName = "dataset.txt";
-    private static float[][] dataset;
+    private float[][] trainingDataset;
+    private float[][] validationDataset;
 
     private int _inputNeurons;
     private Neuron[] _hiddenLayer;
@@ -20,11 +18,11 @@ public class NeuralNetwork {
     private float[][] _weightIncrementsIH;
     private float[] _weightIncrementsHO;
 
-    private float _learningRate = 0.2f;
+    private float _learningRate = 0.01f;
 
     private int _epochs;
 
-    public NeuralNetwork(int inputNeurons, int hiddenNeurons, int outputNeurons) {
+    public NeuralNetwork(int inputNeurons, int hiddenNeurons, int outputNeurons, int percentage) {
 
         _inputNeurons = inputNeurons;
         _weightIncrementsIH = new float[hiddenNeurons][_inputNeurons + 1];
@@ -39,52 +37,50 @@ public class NeuralNetwork {
 
         _outputLayer = new Neuron(hiddenNeurons, LayerType.OUTPUT);
 
-        if(dataset == null) {
-            dataset = LoadPacmanData();
+        if(trainingDataset == null) {
+            LoadPacmanData(percentage);
         }
     }
 
     public void Train() {
-        BackPropagation(dataset, _learningRate);
+        BackPropagation(trainingDataset, validationDataset, _learningRate);
     }
 
-    public void BackPropagation(float[][] dataset, float learningRate) {
-        //TODO: Falta inicializarlo aqui para poder ir porbando diferentes learning rates hasta encontrar el optimo
+    private void BackPropagation(float[][] trainingDataset, float[][] validationDataset, float learningRate) {
+        //TODO: Falta inicializarlo aqui para poder ir probando diferentes learning rates hasta encontrar el optimo
         //HACK: lo hemos puesto en el constructor solo se va a hacer una vez por tanto no podemos probar diferentes learning rates
         // Inicializar wih y who a valores aleatorios pequeños
 
         float error = Float.MAX_VALUE;
-        float lastError = Float.MAX_VALUE;
-        float errorCuadraticoMedio = 0;
+        float lastEcm = Float.MAX_VALUE;
+        float ecm = Float.MAX_VALUE;
 
         // Repetir mientras no se cumpla condición de parada
         do {
-            lastError = error;
+            lastEcm = ecm;
             error = 0;
 
             //Inicializar Δwih y Δwho a 0
             _weightIncrementsIH = new float[_hiddenLayer.length][_hiddenLayer[0].getWeights().length];
             _weightIncrementsHO = new float[_outputLayer.getWeights().length];
 
-            for(float[] tuple : dataset) {
+            float[] inputs = new float[trainingDataset[0].length - 1];
+            float expetedOutput;
 
-                //TODO: cambiar para que coja las entradas de forma dimanica y la salida
-                //HACK: aqui seteo a pelo
-                float[] inputs = {tuple[0], tuple[1]};
-                float expetedOutput = tuple[2];
+            for(float[] tuple : trainingDataset) {
+
+                // -----------
+                int tupleLength = trainingDataset[0].length - 1;
+                for(int i = 0; i < tupleLength; i++) {
+                    inputs[i] = tuple[i];
+                }
+                expetedOutput = tuple[tupleLength];
 
                 //calcular la salida de la red neuronal (feedfordward)
                 float output = forwardPropagation(inputs);
 
-                //TODO: Usar el error cuadrático medio
-                /*if(!isCorrectlyClassified(output, expetedOutput, 2)) {
-                    errors++;
-                }*/
-
                 //calcular los errores de la capa de salida
                 _outputLayer.calculateError(expetedOutput);
-                error += Math.pow((expetedOutput - output),2);
-
 
                 //calcular Δwho para los pesos de todas conexiones entre
                 //la capa oculta y la capa de salida (who)
@@ -124,20 +120,24 @@ public class NeuralNetwork {
 
             //actualizar los pesos de la red who y wih
             UpdateWeights();
+
+            for(float[] tuple : validationDataset) {
+                int tupleLength = trainingDataset[0].length - 1;
+                for(int i = 0; i < tupleLength; i++) {
+                    inputs[i] = tuple[i];
+                }
+                expetedOutput = tuple[tupleLength];
+
+                float output = forwardPropagation(inputs);
+                float diference = expetedOutput - output;
+
+                error += Math.pow(diference,2);
+            }
             _epochs++;
-
-            errorCuadraticoMedio = (float) (error/dataset.length);
-            System.out.print("\r" + "Epoch amount: " + _epochs + " - ECM: " + errorCuadraticoMedio /* + " - Last error " + lastError*/);
-        } while (errorCuadraticoMedio < lastError);
-        System.out.println("END TRAINING");
-    }
-
-    public boolean isClassified(float errors, float validPercentage) {
-        float errorAmountNormalized = (float) errors / dataset.length;
-        float percentage = errorAmountNormalized * 100f;
-
-
-        return (percentage <= validPercentage) ? false : true;
+            ecm = error/validationDataset.length;
+        } while (ecm < lastEcm);
+        System.out.println("Epoch amount: " + _epochs + " - ECM: " + ecm + " - Last ecm " + lastEcm);
+        System.out.println("--------END TRAINING--------");
     }
 
     public float forwardPropagation (float [] _inputLayer) {
@@ -174,45 +174,36 @@ public class NeuralNetwork {
         }
     }
 
-    public boolean isCorrectlyClassified(float output, float expetedOutput, int n) {
-        return round(output, n) == round(expetedOutput, n);
-        //return output == expetedOutput;
-    }
-
-    public float[][] LoadPacmanData () {
+    public void LoadPacmanData (int trainingDatasetPercentage) {
         String data = IO.loadFile(fileName);
         String[] dataLines = data.split("\n");
 
         String[] lineSplited = dataLines[0].split(",");
-        float[][] dataset = new float[dataLines.length][lineSplited.length];
+        int datasetLength = dataLines.length * trainingDatasetPercentage/100;
+
+        trainingDataset = new float[datasetLength][lineSplited.length];
+        validationDataset = new float[dataLines.length - datasetLength][lineSplited.length];
 
         for(int i = 0; i < dataLines.length; i++) {
 
             lineSplited = dataLines[i].split(",");
 
             for (int j = 0; j < lineSplited.length; j++) {
-                dataset[i][j] = Float.parseFloat((lineSplited[j]));
+                if(i < trainingDataset.length) {
+                    trainingDataset[i][j] = Float.parseFloat((lineSplited[j]));
+                } else {
+                    validationDataset[i%trainingDataset.length][j] = Float.parseFloat((lineSplited[j]));
+                }
             }
         }
-
-        return dataset;
     }
-
-    public static double round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-
-        BigDecimal bd = new BigDecimal(value);
-        bd = bd.setScale(places, RoundingMode.HALF_UP);
-        return bd.doubleValue();
-    }
-
 
     public static void main (String [ ] args) {
         int input = 2;
         int hide = 2 * input + 1;
         int output = 1;
 
-        NeuralNetwork neuralNetwork = new NeuralNetwork(input, hide, output);
+        NeuralNetwork neuralNetwork = new NeuralNetwork(input, hide, output, 70);
         neuralNetwork.Train();
 
     }

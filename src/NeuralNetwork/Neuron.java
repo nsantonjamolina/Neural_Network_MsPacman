@@ -33,7 +33,20 @@ public class Neuron {
         }
     }
 
-    public float[] multiplication(float[] _inputs) {
+    public float feedForward(float[] inputs) {
+        _exit = sigmoidalActivation(sumatory(inputs));
+        return _exit;
+    }
+
+    public void calculateError(float x) {
+        if(_currentLayer == LayerType.OUTPUT) {
+            _error = derivedSigmoidalActivation() * (x - _exit);
+        } else {
+            _error = derivedSigmoidalActivation() * x;
+        }
+    }
+
+    private float[] multiplication(float[] _inputs) {
 
         float[] products = new float[_inputs.length + 1];
 
@@ -47,7 +60,7 @@ public class Neuron {
         return products;
     }
 
-    public float sumatory(float[] inputs) {
+    private float sumatory(float[] inputs) {
 
         float sumatory = 0;
         float[] products = multiplication(inputs);
@@ -59,20 +72,14 @@ public class Neuron {
         return sumatory;
     }
 
-    public float sigmoidalActivation(float x) {
+    private float sigmoidalActivation(float x) {
         float gValue = (float) (1/(1 + Math.pow(Math.E, -x)));
         return  gValue;
     }
 
-    public float feedForward(float[] inputs) {
-        _exit = sigmoidalActivation(sumatory(inputs));
-        return _exit;
-    }
-
-    public void setWeight(int pos, float value) {
-        if(pos >= 0 && pos < _weights.length) {
-            _weights[pos] = value;
-        }
+    private float derivedSigmoidalActivation() {
+        float gValue = _exit * (1 - _exit);
+        return  gValue;
     }
 
     public static int getBias() {
@@ -87,13 +94,9 @@ public class Neuron {
 
     public float getError() { return _error; }
 
-    public void calculateError(float x) {
-        if(_currentLayer == LayerType.OUTPUT) {
-            //_error = derivedSigmoidalActivation(_exit) * (1 - _exit) * (x - _exit);
-            _error = _exit * (1 - _exit) * (x - _exit);
-        } else {
-            //_error = derivedSigmoidalActivation(_exit) * x;
-            _error = _exit * (1 - _exit) * x;
+    public void setWeight(int pos, float value) {
+        if(pos >= 0 && pos < _weights.length) {
+            _weights[pos] = value;
         }
     }
 
