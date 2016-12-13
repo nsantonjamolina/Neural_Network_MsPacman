@@ -190,6 +190,10 @@ public class DataTuple {
 		return DiscreteTag.DiscretizeDouble(aux);
 	}
 
+	public double normalizeEdibleTime(int time) {
+		return ((time - 0) / (double) (Constants.EDIBLE_TIME - 0)) * (1 - 0) + 0;
+	}
+
 	public double normalizeLevel(int level) {
 		return ((level - 0) / (double) (Constants.NUM_MAZES - 0)) * (1 - 0) + 0;
 	}

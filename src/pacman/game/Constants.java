@@ -26,6 +26,13 @@ public final class Constants
 		
 		public abstract MOVE opposite();
 	};
+
+	public enum STRATEGY{
+		RUNAWAY,
+		CHASE,
+		EATPILLS,
+		NEUTRAL
+	}
 	
 	/**
 	 * Enumeration for the ghosts. The integer arguments are the initial lair times.
