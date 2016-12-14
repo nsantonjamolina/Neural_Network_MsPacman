@@ -8,8 +8,8 @@ import pacman.game.util.IO;
 public class NeuralNetwork {
 
     private static String fileName = "dataset.txt";
-    private float[][] trainingDataset;
-    private float[][] validationDataset;
+    private static float[][] trainingDataset;
+    private static float[][] validationDataset;
 
     private int _inputNeurons;
     private Neuron[] _hiddenLayer;
@@ -89,9 +89,7 @@ public class NeuralNetwork {
                     float hiddenNeuronExit = _hiddenLayer[i].getExit();
                     _weightIncrementsHO[i] += _learningRate * outputError * hiddenNeuronExit;
                 }
-
                 _weightIncrementsHO[_hiddenLayer.length] += _learningRate * _outputLayer.getError() * Neuron.getBias();
-
 
                 //calcular los errores de la capa oculta
                 float hiddenErrorSumatory = 0;
@@ -114,13 +112,12 @@ public class NeuralNetwork {
                     }
                     _weightIncrementsIH[i][inputs.length] += _learningRate * _hiddenLayer[i].getError() * Neuron.getBias();
                 }
-
-                System.out.println();
             }
 
-            //actualizar los pesos de la red who y wih
+            // Actualizar los pesos de la red who y wih
             UpdateWeights();
 
+            // Pasamos la red neuronal por el dataset de validación para calcular el error cuadrático
             for(float[] tuple : validationDataset) {
                 int tupleLength = trainingDataset[0].length - 1;
                 for(int i = 0; i < tupleLength; i++) {
@@ -133,8 +130,8 @@ public class NeuralNetwork {
 
                 error += Math.pow(diference,2);
             }
-            _epochs++;
-            ecm = error/validationDataset.length;
+            _epochs++; // Contamos las epochs del entrenamiento
+            ecm = error/validationDataset.length; // Calculamos el error cuadrático medio dividiendo el error cuadrático entre el length del dataset de validación
         } while (ecm < lastEcm);
         System.out.println("Epoch amount: " + _epochs + " - ECM: " + ecm + " - Last ecm " + lastEcm);
         System.out.println("--------END TRAINING--------");
@@ -151,7 +148,7 @@ public class NeuralNetwork {
         return _outputLayer.feedForward(hiddenLayerExits);
     }
 
-    public void UpdateWeights() {
+    private void UpdateWeights() {
         // Hacemos update del peso del bias de cada neurona de la capa oculta y de la neurona de salida
         for (int i = 0; i < _outputLayer.getWeights().length; i++) {
             if(_weightIncrementsHO[i] != 0){
@@ -174,7 +171,7 @@ public class NeuralNetwork {
         }
     }
 
-    public void LoadPacmanData (int trainingDatasetPercentage) {
+    private void LoadPacmanData (int trainingDatasetPercentage) {
         String data = IO.loadFile(fileName);
         String[] dataLines = data.split("\n");
 
@@ -196,15 +193,5 @@ public class NeuralNetwork {
                 }
             }
         }
-    }
-
-    public static void main (String [ ] args) {
-        int input = 2;
-        int hide = 2 * input + 1;
-        int output = 1;
-
-        NeuralNetwork neuralNetwork = new NeuralNetwork(input, hide, output, 70);
-        neuralNetwork.Train();
-
     }
 }
