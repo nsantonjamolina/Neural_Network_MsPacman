@@ -21,7 +21,7 @@ public class MyPacMan extends Controller<MOVE>
 {
     public NeuralNetwork neuralNetwork;
     public static float numberOfCorrectDecisions;
-    public static int numberOfIterations;
+    public static int numberOfTicks;
 
 	public MyPacMan() {
 		super();
@@ -31,7 +31,7 @@ public class MyPacMan extends Controller<MOVE>
         int output = 1;
 
         numberOfCorrectDecisions = 0;
-        numberOfIterations = 0;
+        numberOfTicks = 0;
 
         neuralNetwork = new NeuralNetwork(input, hide, output, 70);
         neuralNetwork.Train();
@@ -96,7 +96,7 @@ public class MyPacMan extends Controller<MOVE>
         System.out.println("Inputs: {" + distanceNormalized + ", " + timeNormalized + "} - " + "Output: " +output+", Expected output: " +expectedOutput);
         System.out.println("Strategy: " + outputStrategy + " - Expected strategy: " + outputStrategyToCompare);
         if (outputStrategyToCompare == outputStrategy) numberOfCorrectDecisions++;
-        numberOfIterations ++;
+        numberOfTicks++;
 
 
         switch (outputStrategy) {
@@ -159,9 +159,8 @@ public class MyPacMan extends Controller<MOVE>
         return distance * time - time - (distance / 2) + 1;
     }
 
-
     public static float calculatePercentageOfGoodDecisions(){
-        float percentage = (numberOfCorrectDecisions / numberOfIterations)*100;
+        float percentage = (numberOfCorrectDecisions / numberOfTicks)*100;
         return percentage;
     }
 }
