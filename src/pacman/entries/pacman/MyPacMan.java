@@ -60,14 +60,15 @@ public class MyPacMan extends Controller<MOVE>
         STRATEGY outputStrategy = null;
 
         if(output >= .01f && output <= .25f) {
-            outputStrategy = STRATEGY.CHASE;
+            outputStrategy = STRATEGY.RUNAWAY;
         } else if(output > .25f && output <= .75f) {
             outputStrategy = STRATEGY.EATPILLS;
         } else if(output > .75f && output <= .99f) {
-            outputStrategy = STRATEGY.RUNAWAY;
+            outputStrategy = STRATEGY.CHASE;
         } else {
             outputStrategy = STRATEGY.NEUTRAL;
         }
+        System.out.print("strategy: \r" + outputStrategy);
 
 
         switch (outputStrategy) {
