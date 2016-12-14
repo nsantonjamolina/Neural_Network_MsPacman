@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f221ba73-88ea-48dc-9639-3ee274d245dc" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" id="f221ba73-88ea-48dc-9639-3ee274d245dc" name="Default" comment="" />
     <ignored path="Red neuronal.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path="$PROJECT_DIR$/out/" />
@@ -671,12 +669,12 @@
       <workItem from="1481673812549" duration="1859000" />
       <workItem from="1481729296342" duration="1821000" />
       <workItem from="1481731335821" duration="5612000" />
-      <workItem from="1481750693367" duration="2510000" />
+      <workItem from="1481750693367" duration="2560000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="86407000" />
+    <option name="totallyTimeSpent" value="86457000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="3456" height="1416" extended-state="6" />
