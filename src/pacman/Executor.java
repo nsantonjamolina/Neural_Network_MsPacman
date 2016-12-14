@@ -71,7 +71,7 @@ public class Executor
 		 */
 		
 		//run game for data collection
-		exec.runGameTimed(new DataCollectorController(new MyPacMan()),new StarterGhosts(),visual);
+		exec.runGameTimed(new MyPacMan(),new StarterGhosts(),visual);
 	}
 	
     /**
@@ -180,9 +180,10 @@ public class Executor
 	        if(visual)
 	        	gv.repaint();
 		}
-		
+
 		pacManController.terminate();
 		ghostController.terminate();
+		System.err.println("Porcentaje de aciertos: " + MyPacMan.calculatePercentageOfGoodDecisions() + "%");
 	}
 	
     /**

@@ -20,6 +20,8 @@ import java.util.ArrayList;
 public class MyPacMan extends Controller<MOVE>
 {
     public NeuralNetwork neuralNetwork;
+    public static float numberOfCorrectDecisions;
+    public static int numberOfIterations;
 
 	public MyPacMan() {
 		super();
@@ -27,6 +29,9 @@ public class MyPacMan extends Controller<MOVE>
         int input = 2;
         int hide = 2 * input + 1;
         int output = 1;
+
+        numberOfCorrectDecisions = 0;
+        numberOfIterations = 0;
 
         neuralNetwork = new NeuralNetwork(input, hide, output, 70);
         neuralNetwork.Train();
@@ -60,20 +65,38 @@ public class MyPacMan extends Controller<MOVE>
         float output = neuralNetwork.forwardPropagation(inputs);
         float expectedOutput = validationFunction(distanceNormalized, timeNormalized);
 
-        System.out.println(distanceNormalized+","+timeNormalized+","+output+","+expectedOutput);
-
         STRATEGY outputStrategy = null;
+        STRATEGY outputStrategyToCompare = null;
+
 
         if(output >= .01f && output <= .25f) {
             outputStrategy = STRATEGY.CHASE;
+            outputStrategyToCompare = STRATEGY.CHASE;
         } else if(output > .25f && output <= .95f) {
             outputStrategy = STRATEGY.EATPILLS;
+            outputStrategyToCompare = STRATEGY.EATPILLS;
         } else if(output > .95f && output <= .99f) {
             outputStrategy = STRATEGY.RUNAWAY;
+            outputStrategyToCompare = STRATEGY.RUNAWAY;
         } else {
             outputStrategy = STRATEGY.NEUTRAL;
+            outputStrategyToCompare = STRATEGY.NEUTRAL;
         }
-        System.out.print("\r"+"strategy:" + outputStrategy);
+
+        if(expectedOutput >= .01f && expectedOutput <= .25f) {
+            outputStrategyToCompare = STRATEGY.CHASE;
+        } else if(expectedOutput > .25f && expectedOutput <= .95f) {
+            outputStrategyToCompare = STRATEGY.EATPILLS;
+        } else if(expectedOutput > .95f && expectedOutput <= .99f) {
+            outputStrategyToCompare = STRATEGY.RUNAWAY;
+        } else {
+            outputStrategyToCompare = STRATEGY.NEUTRAL;
+        }
+
+        System.out.println("Inputs: {" + distanceNormalized + ", " + timeNormalized + "} - " + "Output: " +output+", Expected output: " +expectedOutput);
+        System.out.println("Strategy: " + outputStrategy + " - Expected strategy: " + outputStrategyToCompare);
+        if (outputStrategyToCompare == outputStrategy) numberOfCorrectDecisions++;
+        numberOfIterations ++;
 
 
         switch (outputStrategy) {
@@ -98,8 +121,6 @@ public class MyPacMan extends Controller<MOVE>
                     targetsArray[i]=targets.get(i);
 
                 myMove = game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(),game.getClosestNodeIndexFromNodeIndex(game.getPacmanCurrentNodeIndex(),targetsArray, Constants.DM.PATH), Constants.DM.PATH);
-                /*if (killerPacManResult == nextMove) numberOfCorrectDecisions++;
-                else System.err.println("Didnt make the same decision as KillerPacMan, KillerPacMan chose: " + killerPacManResult.toString());*/
                 return myMove;
             case CHASE:
                 int minDistGChase = Integer.MAX_VALUE;
@@ -114,7 +135,6 @@ public class MyPacMan extends Controller<MOVE>
                 }
 
                 myMove = game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghostAPerseguir), Constants.DM.PATH);
-                /*if (killerPacManResult == nextMove) numberOfCorrectDecisions++;*/
                 return myMove;
             case RUNAWAY:
                 int minDistGRunAwayy = Integer.MAX_VALUE;
@@ -129,7 +149,6 @@ public class MyPacMan extends Controller<MOVE>
                 }
 
                 myMove = game.getNextMoveAwayFromTarget(game.getPacmanCurrentNodeIndex(), game.getGhostCurrentNodeIndex(ghostDelQueHuir), Constants.DM.PATH);
-                /*if (killerPacManResult == nextMove) numberOfCorrectDecisions++;*/
                 return myMove;
             default:
                 return MOVE.NEUTRAL;
@@ -139,4 +158,11 @@ public class MyPacMan extends Controller<MOVE>
 	public float validationFunction(float distance, float time) {
         return distance * time - time - (distance / 2) + 1;
     }
+
+
+    public static float calculatePercentageOfGoodDecisions(){
+        float percentage = (numberOfCorrectDecisions / numberOfIterations)*100;
+        return percentage;
+    }
 }
+

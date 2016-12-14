@@ -18,6 +18,7 @@ public abstract class Controller<T> implements Runnable
 	private Game game;
 	protected T lastMove;	//this is now protected. You can set this directly in your getMove() method to save an immediate response.
 
+
 	/**
 	 * Instantiates a new controller. The constructor initialises the class variables.
 	 */
