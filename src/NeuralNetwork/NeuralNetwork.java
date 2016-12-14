@@ -18,7 +18,7 @@ public class NeuralNetwork {
     private float[][] _weightIncrementsIH;
     private float[] _weightIncrementsHO;
 
-    private float _learningRate = 0.01f;
+    private float _learningRate = 0.2f;
 
     private int _epochs;
 
@@ -47,9 +47,6 @@ public class NeuralNetwork {
     }
 
     private void BackPropagation(float[][] trainingDataset, float[][] validationDataset, float learningRate) {
-        //TODO: Falta inicializarlo aqui para poder ir probando diferentes learning rates hasta encontrar el optimo
-        //HACK: lo hemos puesto en el constructor solo se va a hacer una vez por tanto no podemos probar diferentes learning rates
-        // Inicializar wih y who a valores aleatorios pequeños
 
         float error = Float.MAX_VALUE;
         float lastEcm = Float.MAX_VALUE;
@@ -60,16 +57,15 @@ public class NeuralNetwork {
             lastEcm = ecm;
             error = 0;
 
-            //Inicializar Δwih y Δwho a 0
-            _weightIncrementsIH = new float[_hiddenLayer.length][_hiddenLayer[0].getWeights().length];
-            _weightIncrementsHO = new float[_outputLayer.getWeights().length];
-
             float[] inputs = new float[trainingDataset[0].length - 1];
             float expetedOutput;
 
             for(float[] tuple : trainingDataset) {
+                //Inicializar Δwih y Δwho a 0
+                _weightIncrementsIH = new float[_hiddenLayer.length][_hiddenLayer[0].getWeights().length];
+                _weightIncrementsHO = new float[_outputLayer.getWeights().length];
 
-                // -----------
+                // Entradas de la tupla y salida esperad
                 int tupleLength = trainingDataset[0].length - 1;
                 for(int i = 0; i < tupleLength; i++) {
                     inputs[i] = tuple[i];
@@ -92,16 +88,11 @@ public class NeuralNetwork {
                 _weightIncrementsHO[_hiddenLayer.length] += _learningRate * _outputLayer.getError() * Neuron.getBias();
 
                 //calcular los errores de la capa oculta
-                float hiddenErrorSumatory = 0;
-
-                for (int i = 0; i < _outputLayer.getWeights().length; i++) {
+                for (int i = 0; i < _hiddenLayer.length; i++) {
                     float outputError = _outputLayer.getError();
                     float weightHO = _outputLayer.getWeights()[i];
-                    hiddenErrorSumatory += outputError * weightHO;
-                }
-
-                for(Neuron neuron : _hiddenLayer) {
-                    neuron.calculateError(hiddenErrorSumatory);
+                    float propagatedError = outputError * weightHO;
+                    _hiddenLayer[i].calculateError(propagatedError);
                 }
 
                 //calcular Δwih para los pesos de todas conexiones entre
@@ -112,14 +103,14 @@ public class NeuralNetwork {
                     }
                     _weightIncrementsIH[i][inputs.length] += _learningRate * _hiddenLayer[i].getError() * Neuron.getBias();
                 }
-            }
 
-            // Actualizar los pesos de la red who y wih
-            UpdateWeights();
+                // Actualizar los pesos de la red who y wih
+                UpdateWeights();
+            }
 
             // Pasamos la red neuronal por el dataset de validación para calcular el error cuadrático
             for(float[] tuple : validationDataset) {
-                int tupleLength = trainingDataset[0].length - 1;
+                int tupleLength = validationDataset[0].length - 1;
                 for(int i = 0; i < tupleLength; i++) {
                     inputs[i] = tuple[i];
                 }
@@ -130,10 +121,11 @@ public class NeuralNetwork {
 
                 error += Math.pow(diference,2);
             }
+
             _epochs++; // Contamos las epochs del entrenamiento
             ecm = error/validationDataset.length; // Calculamos el error cuadrático medio dividiendo el error cuadrático entre el length del dataset de validación
+            System.out.println("Epoch amount: " + _epochs + " - ECM: " + ecm + " - Last ecm " + lastEcm);
         } while (ecm < lastEcm);
-        System.out.println("Epoch amount: " + _epochs + " - ECM: " + ecm + " - Last ecm " + lastEcm);
         System.out.println("--------END TRAINING--------");
     }
 

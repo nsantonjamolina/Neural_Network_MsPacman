@@ -47,28 +47,33 @@ public class MyPacMan extends Controller<MOVE>
 
         for (GHOST ghost : GHOST.values()) {
             int distance = game.getShortestPathDistance(currentGameTuple.pacmanPosition, game.getGhostCurrentNodeIndex(ghost));
-            if(distance < minDistGRunAway)  {
+            if(distance < minDistGRunAway && distance != -1)  {
                 minDistGRunAway = distance;
                 ghostDelQueHuir = ghost;
                 ghostEdibleTimeRemaining = game.getGhostEdibleTime(ghost);
             }
         }
 
-
-        float[] inputs = {(float) currentGameTuple.normalizeDistance(minDistGRunAway), (float) currentGameTuple.normalizeEdibleTime(ghostEdibleTimeRemaining)};
+        float distanceNormalized = (minDistGRunAway < 0) ? 1 : (float) currentGameTuple.normalizeDistance(minDistGRunAway);
+        float timeNormalized = (float) currentGameTuple.normalizeEdibleTime(ghostEdibleTimeRemaining);
+        float[] inputs = {distanceNormalized, timeNormalized};
         float output = neuralNetwork.forwardPropagation(inputs);
+        float expectedOutput = validationFunction(distanceNormalized, timeNormalized);
+
+        System.out.println(distanceNormalized+","+timeNormalized+","+output+","+expectedOutput);
+
         STRATEGY outputStrategy = null;
 
         if(output >= .01f && output <= .25f) {
-            outputStrategy = STRATEGY.RUNAWAY;
-        } else if(output > .25f && output <= .75f) {
-            outputStrategy = STRATEGY.EATPILLS;
-        } else if(output > .75f && output <= .99f) {
             outputStrategy = STRATEGY.CHASE;
+        } else if(output > .25f && output <= .95f) {
+            outputStrategy = STRATEGY.EATPILLS;
+        } else if(output > .95f && output <= .99f) {
+            outputStrategy = STRATEGY.RUNAWAY;
         } else {
             outputStrategy = STRATEGY.NEUTRAL;
         }
-        System.out.print("strategy: \r" + outputStrategy);
+        System.out.print("\r"+"strategy:" + outputStrategy);
 
 
         switch (outputStrategy) {
@@ -130,4 +135,8 @@ public class MyPacMan extends Controller<MOVE>
                 return MOVE.NEUTRAL;
         }
 	}
+
+	public float validationFunction(float distance, float time) {
+        return distance * time - time - (distance / 2) + 1;
+    }
 }
