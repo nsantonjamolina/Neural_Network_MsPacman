@@ -93,8 +93,10 @@ public class MyPacMan extends Controller<MOVE>
             outputStrategyToCompare = STRATEGY.NEUTRAL;
         }
 
-        System.out.println("Inputs: {" + distanceNormalized + ", " + timeNormalized + "} - " + "Output: " +output+", Expected output: " +expectedOutput);
-        System.out.println("Strategy: " + outputStrategy + " - Expected strategy: " + outputStrategyToCompare);
+        // Descomentar si se necesita debuggear en el terminal
+        /*System.out.println("Inputs: {" + distanceNormalized + ", " + timeNormalized + "} - " + "Output: " +output+", Expected output: " +expectedOutput);
+        System.out.println("Strategy: " + outputStrategy + " - Expected strategy: " + outputStrategyToCompare);*/
+
         if (outputStrategyToCompare == outputStrategy) numberOfCorrectDecisions++;
         numberOfTicks++;
 
