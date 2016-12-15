@@ -45,7 +45,7 @@ public class MyPacMan extends Controller<MOVE>
         DataTuple currentGameTuple = new DataTuple(game, myMove);
 
 
-        int minDistGRunAway = Integer.MAX_VALUE;
+        int minDistGRunAway = currentGameTuple.getMaximumDistance();
         int ghostEdibleTimeRemaining = 0;
         GHOST ghostDelQueHuir = null;
 

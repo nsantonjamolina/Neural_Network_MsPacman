@@ -125,6 +125,9 @@ public class NeuralNetwork {
             _epochs++; // Contamos las epochs del entrenamiento
             ecm = error/validationDataset.length; // Calculamos el error cuadrático medio dividiendo el error cuadrático entre el length del dataset de validación
             System.out.println("Epoch amount: " + _epochs + " - ECM: " + ecm + " - Last ecm " + lastEcm);
+            if(_epochs > 4999) {
+                break;
+            }
         } while (ecm < lastEcm);
         System.out.println("--------END TRAINING--------");
     }

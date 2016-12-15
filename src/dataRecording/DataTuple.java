@@ -58,6 +58,11 @@ public class DataTuple {
 	public int numberOfNodesInLevel;
 	public int numberOfTotalPillsInLevel;
 	public int numberOfTotalPowerPillsInLevel;
+
+	public int getMaximumDistance() {
+		return maximumDistance;
+	}
+
 	private int maximumDistance = 150;
 
 	public DataTuple(Game game, MOVE move) {
